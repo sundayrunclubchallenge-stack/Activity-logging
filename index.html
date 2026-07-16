@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log Activity — SRC 100 Day Challenge</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red:#e8350d; --orange:#f97316; --yellow:#fbbf24;
+  --green:#16a34a; --blue:#2563eb; --purple:#7c3aed;
+  --bg:#fafaf8; --surface:#ffffff; --border:#e5e3dc;
+  --text:#18181b; --muted:#71717a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+
+/* HERO */
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 40%,#312e81 70%,#1e3a8a 100%);padding:44px 24px 36px;text-align:center}
+.hero-bg-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Barlow Condensed',sans-serif;font-weight:900;font-style:italic;font-size:clamp(100px,20vw,200px);color:rgba(255,255,255,0.04);white-space:nowrap;pointer-events:none;user-select:none}
+.hero-badge{display:inline-block;padding:5px 16px;background:linear-gradient(90deg,var(--green),#15803d);border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#fff;text-transform:uppercase;letter-spacing:.12em;margin-bottom:16px}
+.hero-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-style:italic;font-size:clamp(40px,8vw,72px);line-height:.95;text-transform:uppercase;letter-spacing:-.02em;color:#fff;margin-bottom:10px}
+.hero-title .src{background:linear-gradient(90deg,var(--yellow),var(--orange),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{color:rgba(255,255,255,0.55);font-size:14px;max-width:360px;margin:0 auto;line-height:1.6}
+.accent-bar{height:5px;background:linear-gradient(90deg,var(--red),var(--orange),var(--yellow),var(--green),var(--blue),var(--purple))}
+
+/* FORM */
+.form-outer{max-width:560px;margin:36px auto;padding:0 20px 80px}
+.form-outer.hidden{display:none}
+.progress-wrap{background:var(--border);height:4px;border-radius:2px;margin-bottom:28px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--blue));border-radius:2px;transition:width .4s ease;width:0%}
+.form-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:28px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.section-label{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.section-dot{width:8px;height:8px;border-radius:50%}
+.field{margin-bottom:18px}
+.field:last-child{margin-bottom:0}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label.fl{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:7px}
+.req{color:var(--red);margin-left:2px}
+input,select{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;color:var(--text);padding:11px 14px;font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .15s,box-shadow .15s;appearance:none}
+input::placeholder{color:#a1a1aa}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1);background:var(--surface)}
+input.err,select.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(232,53,13,.08)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%2371717a' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px;cursor:pointer}
+.field-err{font-size:11px;color:var(--red);margin-top:5px;display:none;font-weight:500}
+.field-err.show{display:block}
+.field-hint{font-size:11px;color:var(--muted);margin-top:5px}
+
+/* Duration row */
+.dur-row{display:flex;gap:10px;align-items:center}
+.dur-group{display:flex;align-items:center;gap:6px;flex:1}
+.dur-select{padding:11px 8px;text-align:center;font-size:15px;font-weight:600;font-family:'JetBrains Mono',monospace;letter-spacing:.02em}
+.dur-label{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+
+/* Points preview */
+.points-preview{display:none;background:linear-gradient(135deg,#f0fdf4,#eff6ff);border:1.5px solid #bbf7d0;border-radius:10px;padding:20px;margin-bottom:16px}
+.points-preview.show{display:block}
+.pts-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;color:var(--muted)}
+.pts-val{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--green)}
+.pts-total-row{display:flex;justify-content:space-between;align-items:center;border-top:1.5px solid #bbf7d0;margin-top:10px;padding-top:12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;text-transform:uppercase;letter-spacing:.04em}
+.pts-total-val{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:36px;color:var(--green)}
+
+.distance-wrap{transition:opacity .2s}
+.distance-wrap.hidden{opacity:.3;pointer-events:none}
+
+/* Add/Remove activity buttons */
+.add-activity-btn{padding:12px 24px;background:var(--surface);border:2px dashed var(--border);border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);cursor:pointer;transition:all .15s}
+.add-activity-btn:hover{border-color:var(--blue);background:#eff6ff}
+.remove-activity-btn{padding:4px 12px;background:none;border:1.5px solid var(--border);border-radius:6px;font-size:12px;color:var(--red);cursor:pointer;font-weight:600;transition:all .15s}
+.remove-activity-btn:hover{background:#fff5f3;border-color:var(--red)}
+
+/* Submit */
+.submit-btn{width:100%;padding:16px;background:linear-gradient(135deg,var(--green),#15803d);color:#fff;border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.1em;cursor:pointer;transition:opacity .15s,transform .1s;box-shadow:0 4px 20px rgba(22,163,74,.3)}
+.submit-btn:hover{opacity:.9;transform:translateY(-1px)}
+.submit-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+#server-error{display:none;color:var(--red);font-size:13px;font-weight:500;padding:12px 16px;background:#fff5f3;border:1.5px solid var(--red);border-radius:8px;margin-bottom:14px}
+
+/* Success */
+.success-wrap{display:none;text-align:center;padding:60px 24px}
+.success-wrap.show{display:block}
+.success-icon{font-size:64px;margin-bottom:20px}
+.success-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-style:italic;font-size:52px;text-transform:uppercase;background:linear-gradient(90deg,var(--green),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px}
+.success-pts{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:80px;line-height:1;color:var(--green);margin:16px 0 4px}
+.success-pts-label{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:24px}
+.success-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:20px;max-width:360px;margin:0 auto 16px;text-align:left;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.sc-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.sc-row:last-child{border-bottom:none}
+.sc-label{color:var(--muted)}.sc-val{font-weight:600}
+.log-another-btn{padding:14px 32px;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;border:none;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;transition:opacity .15s;box-shadow:0 4px 16px rgba(37,99,235,.3);margin-top:16px}
+.log-another-btn:hover{opacity:.9}
+
+/* Spinner */
+.spinner-wrap{display:none;text-align:center;padding:32px;color:var(--muted);font-size:13px;font-family:'JetBrains Mono',monospace}
+.spinner-wrap.show{display:block}
+.spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* CONFIRMATION MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:100;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--surface);border-radius:16px;padding:28px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1.5px solid var(--border)}
+.modal-icon{font-size:40px;margin-bottom:12px;text-align:center}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:24px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;text-align:center}
+.modal-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:20px;line-height:1.5}
+.modal-entries{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:14px;margin-bottom:20px;max-height:200px;overflow-y:auto}
+.modal-entry{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.modal-entry:last-child{border-bottom:none}
+.modal-entry-name{font-weight:500;color:var(--text)}
+.modal-entry-pts{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--green);font-size:12px}
+.modal-first-entry{text-align:center;padding:12px;font-size:14px;color:var(--green);font-weight:600}
+.modal-first-entry span{font-size:24px;display:block;margin-bottom:6px}
+.modal-btns{display:flex;gap:10px}
+.modal-btn-cancel{flex:1;padding:12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;transition:all .15s}
+.modal-btn-cancel:hover{border-color:var(--text);color:var(--text)}
+.modal-btn-confirm{flex:2;padding:12px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--green),#15803d);color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;transition:opacity .15s;box-shadow:0 3px 12px rgba(22,163,74,.3)}
+.modal-btn-confirm:hover{opacity:.9}
+
+footer{background:rgba(10,10,18,0.9);color:rgba(255,255,255,0.35);padding:18px 32px;display:flex;justify-content:space-between;font-size:12px;font-family:'JetBrains Mono',monospace;flex-wrap:wrap;gap:8px;border-top:1px solid rgba(255,255,255,0.06)}
+
+/* ═══ DARK SPORTY THEME ═══ */
+:root {
+  --bg:#0f0f14; --surface:rgba(255,255,255,0.04); --border:rgba(255,255,255,0.08);
+  --text:#f0f0f5; --muted:rgba(255,255,255,0.5);
+}
+body{background:var(--bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(124,58,237,0.06) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(37,99,235,0.05) 0%,transparent 50%),radial-gradient(ellipse at 50% 90%,rgba(22,163,74,0.04) 0%,transparent 50%)}
+
+/* Glassmorphism cards */
+.form-card{background:rgba(255,255,255,0.03);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.07);box-shadow:0 4px 24px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.04)}
+.form-card:hover{border-color:rgba(255,255,255,0.12);box-shadow:0 8px 32px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.06)}
+
+/* Inputs dark */
+input,select{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08);color:var(--text)}
+input::placeholder{color:rgba(255,255,255,0.25)}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,0.15),0 0 16px rgba(37,99,235,0.08);background:rgba(255,255,255,0.06)}
+input.err,select.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(232,53,13,0.12)}
+select option{background:#1a1a24;color:#f0f0f5}
+
+/* Labels */
+label.fl{color:rgba(255,255,255,0.5)}
+.section-label{color:rgba(255,255,255,0.8)}
+.field-hint{color:rgba(255,255,255,0.35)}
+
+/* Progress bar */
+.progress-wrap{background:rgba(255,255,255,0.06)}
+
+/* Points preview glass */
+.points-preview{background:rgba(22,163,74,0.06);border-color:rgba(22,163,74,0.2);backdrop-filter:blur(8px)}
+.pts-total-row{border-top-color:rgba(22,163,74,0.2)}
+.pts-val{text-shadow:0 0 8px rgba(22,163,74,0.3)}
+.pts-total-val{text-shadow:0 0 16px rgba(22,163,74,0.4)}
+
+/* Submit glow */
+.submit-btn{box-shadow:0 4px 24px rgba(22,163,74,0.3)}
+.submit-btn:hover{box-shadow:0 6px 32px rgba(22,163,74,0.4)}
+
+/* Add activity button */
+.add-activity-btn{background:transparent;border-color:rgba(255,255,255,0.1);color:var(--blue)}
+.add-activity-btn:hover{border-color:var(--blue);background:rgba(37,99,235,0.06)}
+
+/* Remove button */
+.remove-activity-btn{border-color:rgba(255,255,255,0.08);background:rgba(232,53,13,0.05)}
+.remove-activity-btn:hover{background:rgba(232,53,13,0.1);border-color:rgba(232,53,13,0.3)}
+
+/* Success cards */
+.success-card{background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.08);backdrop-filter:blur(8px)}
+.sc-row{border-bottom-color:rgba(255,255,255,0.06)}
+.sc-label{color:rgba(255,255,255,0.45)}
+
+/* Modal glass */
+.modal-overlay{background:rgba(0,0,0,0.7)}
+.modal-box{background:rgba(26,26,34,0.95);border-color:rgba(255,255,255,0.08);backdrop-filter:blur(16px)}
+.modal-entries{background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.06)}
+.modal-entry{border-bottom-color:rgba(255,255,255,0.06)}
+.modal-btn-cancel{border-color:rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.5)}
+.modal-btn-cancel:hover{border-color:rgba(255,255,255,0.3);color:#fff}
+.modal-btn-confirm{box-shadow:0 4px 16px rgba(22,163,74,0.3)}
+
+/* Server error */
+#server-error{background:rgba(232,53,13,0.06);border-color:rgba(232,53,13,0.2)}
+
+/* Log another button glow */
+.log-another-btn{box-shadow:0 4px 20px rgba(37,99,235,0.3)}
+
+/* Section dots glow */
+.section-dot{box-shadow:0 0 6px currentColor}
+
+/* ═══ FUNKY VISUAL UPGRADES (CSS-only, no functionality changes) ═══ */
+
+/* Animated hero */
+.hero{background-size:200% 200%;animation:heroShift 6s ease-in-out infinite}
+@keyframes heroShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero-badge{animation:badgePulse 2s ease-in-out infinite}
+@keyframes badgePulse{0%,100%{box-shadow:0 0 0 transparent}50%{box-shadow:0 0 16px rgba(22,163,74,0.5)}}
+
+/* Cards lift on hover */
+.form-card{transition:transform .2s,box-shadow .2s}
+.form-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.1)}
+
+/* Colored top accent on activity cards */
+#activity-1{border-top:3px solid var(--orange)}
+#activity-2{border-top:3px solid var(--purple)}
+#activity-3{border-top:3px solid var(--red)}
+
+/* Submit button shimmer */
+.submit-btn{position:relative;overflow:hidden}
+.submit-btn::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);animation:shimmer 3s ease-in-out infinite}
+@keyframes shimmer{0%{left:-100%}50%,100%{left:120%}}
+.submit-btn:disabled::after{animation:none}
+
+/* Progress bar glow */
+.progress-fill{box-shadow:0 0 6px rgba(22,163,74,0.4)}
+
+/* Modal pop animation */
+.modal-overlay.show .modal-box{animation:popIn .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:scale(.85) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+
+/* Accent bar shine */
+.accent-bar{position:relative;overflow:hidden}
+.accent-bar::after{content:'';position:absolute;top:0;left:-100%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent);animation:barShine 4s linear infinite}
+@keyframes barShine{0%{left:-100%}100%{left:200%}}
+
+/* Add button hover */
+.add-activity-btn:hover{transform:scale(1.02)}
+
+/* ═══ MORE FUNKY UPGRADES ═══ */
+
+/* Staggered fade-in on page load */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.form-outer{animation:fadeUp .5s ease-out}
+.form-card:nth-child(1){animation:fadeUp .4s ease-out .05s both}
+.form-card:nth-child(2){animation:fadeUp .4s ease-out .12s both}
+.form-card:nth-child(3){animation:fadeUp .4s ease-out .19s both}
+
+/* Success icon bounce */
+.success-wrap.show .success-icon{animation:iconBounce .6s cubic-bezier(.34,1.56,.64,1)}
+@keyframes iconBounce{0%{transform:scale(0) rotate(-15deg)}50%{transform:scale(1.3) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
+
+/* Success points pop */
+.success-wrap.show .success-pts{animation:ptsPop .4s ease-out .2s both}
+@keyframes ptsPop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* Modal icon shake */
+.modal-overlay.show .modal-icon{animation:emojiShake .5s ease-out .2s both}
+@keyframes emojiShake{0%{transform:rotate(0)}20%{transform:rotate(15deg)}40%{transform:rotate(-12deg)}60%{transform:rotate(8deg)}80%{transform:rotate(-4deg)}100%{transform:rotate(0)}}
+
+/* Input focus colored glow */
+#f_name:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12),0 0 12px rgba(37,99,235,.08)}
+[id^="f_type"]:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.12),0 0 12px rgba(249,115,22,.08)}
+[id^="f_distance"]:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.12),0 0 12px rgba(22,163,74,.08)}
+
+/* Custom scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:#d4d4d8;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#a1a1aa}
+
+/* Points preview subtle pulse */
+.points-preview.show{animation:ptsPulse 2s ease-in-out infinite;border-color:#86efac}
+@keyframes ptsPulse{0%,100%{box-shadow:0 2px 12px rgba(22,163,74,.08)}50%{box-shadow:0 4px 24px rgba(22,163,74,.18)}}
+
+/* Confetti pieces */
+.confetti-piece{position:fixed;top:-10px;z-index:9999;pointer-events:none;animation:confettiFall linear forwards}
+@keyframes confettiFall{0%{transform:translateY(0) rotate(0) scale(1);opacity:1}100%{transform:translateY(100vh) rotate(720deg) scale(.3);opacity:0}}
+
+/* Floating particles in hero */
+.hero-particle{position:absolute;background:rgba(255,255,255,.15);border-radius:50%;pointer-events:none;animation:floatUp linear infinite}
+@keyframes floatUp{0%{transform:translateY(0) scale(0);opacity:0}10%{opacity:1;transform:scale(1)}90%{opacity:.8}100%{transform:translateY(-200px) scale(.5);opacity:0}}
+
+/* Funny tagline animations */
+@keyframes funnySlideIn{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
+@keyframes funnyGlow{0%,100%{box-shadow:0 0 0 transparent}50%{box-shadow:0 0 12px rgba(249,115,22,0.15)}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-bg-text">LOG</div>
+  <div class="hero-badge">💪 Log Today's Activity</div>
+  <h1 class="hero-title"><span class="src">SRC</span> · 100 Day<br>Challenge</h1>
+  <p class="hero-sub">Every activity counts. Log it, earn your points, climb the leaderboard.</p>
+</div>
+<div class="accent-bar"></div>
+
+<div class="spinner-wrap show" id="loadingNames">
+  <div class="spinner"></div>Loading participant list...
+</div>
+
+<!-- FORM -->
+<div class="form-outer hidden" id="formWrap">
+  <div style="margin-bottom:24px">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;text-transform:uppercase;letter-spacing:.02em;margin-bottom:6px">Log Your Activities</div>
+    <p style="color:var(--muted);font-size:13px;line-height:1.5">Fill in what you did today. You can log up to 3 activities at once. Points are calculated automatically.</p>
+  </div>
+
+  <div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+
+  <!-- Who are you -->
+  <div class="form-card">
+    <div class="section-label"><div class="section-dot" style="background:var(--blue)"></div>Who Are You?</div>
+    <div class="field">
+      <label class="fl">Your Name <span class="req">*</span></label>
+      <select id="f_name" onchange="onNameChange(); updateProgress()"><option value="">— select your name —</option></select>
+      <div class="field-err" id="err_name">Please select your name</div>
+    </div>
+    <div class="field" id="team-display" style="display:none">
+      <label class="fl">Your Team</label>
+      <input type="text" id="f_team" readonly style="background:var(--bg);color:var(--blue);font-weight:600;cursor:default">
+    </div>
+    <div class="field">
+      <label class="fl">Activity Date <span class="req">*</span></label>
+      <input type="date" id="f_date" onchange="updateProgress()">
+      <div class="field-err" id="err_date">Please select the activity date</div>
+    </div>
+  </div>
+
+  <!-- Activity 1 -->
+  <div class="form-card activity-card" id="activity-1">
+    <div class="section-label"><div class="section-dot" style="background:var(--orange)"></div>Activity 1</div>
+    <div class="field">
+      <label class="fl">Activity Type <span class="req">*</span></label>
+      <select id="f_type_1" onchange="onActivityChange(1); updateProgress()">
+        <option value="">— select activity —</option>
+        <optgroup label="🏃 Distance-Based (points per km)"><option value="Running">🏃 Running</option><option value="Cycling">🚴 Cycling</option><option value="Walking">🚶 Walking</option></optgroup>
+        <optgroup label="⏱ Time-Based (points per hour, pro-rata)"><option value="Swimming">🏊 Swimming</option><option value="Hiking">🥾 Hiking</option><option value="Rowing">🚣 Rowing</option><option value="Triathlon">🏅 Triathlon</option><option value="Badminton">🏸 Badminton</option><option value="Tennis">🎾 Tennis</option><option value="Table Tennis">🏓 Table Tennis</option><option value="Squash">🎯 Squash</option><option value="Pickleball">🏸 Pickleball</option><option value="Football / Soccer">⚽ Football / Soccer</option><option value="Cricket">🏏 Cricket</option><option value="Basketball">🏀 Basketball</option><option value="Volleyball">🏐 Volleyball</option><option value="Baseball">⚾ Baseball</option><option value="Rugby">🏉 Rugby</option><option value="Hockey">🏑 Hockey</option><option value="Kabaddi">🤼 Kabaddi</option><option value="Kho Kho">🏃 Kho Kho</option><option value="Golf">⛳ Golf</option><option value="Archery">🏹 Archery</option><option value="Bowling">🎳 Bowling</option><option value="Snooker / Billiards">🎱 Snooker / Billiards</option><option value="Wrestling">🤼 Wrestling</option><option value="Boxing">🥊 Boxing</option><option value="Judo">🥋 Judo</option><option value="Karate">🥋 Karate</option><option value="Taekwondo">🥋 Taekwondo</option><option value="MMA">🥊 MMA</option><option value="Weightlifting">🏋️ Weightlifting</option><option value="Powerlifting">🏋️ Powerlifting</option><option value="CrossFit">💪 CrossFit</option><option value="Gym Workout">💪 Gym Workout</option><option value="Yoga">🧘 Yoga</option><option value="Pilates">🧘 Pilates</option><option value="Meditation">🧘 Meditation</option><option value="Skating">⛸ Skating</option><option value="Skiing">⛷ Skiing</option><option value="Snowboarding">🏂 Snowboarding</option><option value="Surfing">🏄 Surfing</option><option value="Diving">🤿 Diving</option><option value="Canoeing">🛶 Canoeing</option><option value="Kayaking">🛶 Kayaking</option><option value="Rock Climbing">🧗 Rock Climbing</option><option value="Mountaineering">🏔️ Mountaineering</option><option value="Horse Riding">🐎 Horse Riding</option><option value="Chess">♟️ Chess</option></optgroup>
+      </select>
+      <div class="field-err" id="err_type_1">Please select an activity</div>
+    </div>
+    <div class="field distance-wrap hidden" id="distanceWrap_1"><label class="fl">Distance (km) <span class="req">*</span></label><input type="number" id="f_distance_1" placeholder="0.0" step="0.01" min="0" oninput="updatePoints(); updateProgress()"><div class="field-hint">Enter distance in kilometres (e.g. 5.2)</div><div class="field-err" id="err_distance_1">Please enter the distance</div></div>
+    <div class="field"><label class="fl">Duration <span class="req">*</span></label><div class="dur-row"><div class="dur-group"><select id="f_hr_1" class="dur-select" onchange="updatePoints(); updateProgress()"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select><span class="dur-label">Hr</span></div><div class="dur-group"><select id="f_min_1" class="dur-select" onchange="updatePoints(); updateProgress()"><option value="0">00</option><option value="5">05</option><option value="10">10</option><option value="15">15</option><option value="20">20</option><option value="25">25</option><option value="30">30</option><option value="35">35</option><option value="40">40</option><option value="45">45</option><option value="50">50</option><option value="55">55</option></select><span class="dur-label">Min</span></div></div><div class="field-err" id="err_duration_1">Please select a duration (at least 5 minutes)</div></div>
+    <div class="field"><label class="fl">Notes (optional)</label><input type="text" id="f_notes_1" placeholder="e.g. Morning trail run"></div>
+  </div>
+
+  <!-- Activity 2 -->
+  <div class="form-card activity-card" id="activity-2" style="display:none">
+    <div class="section-label" style="justify-content:space-between"><div style="display:flex;align-items:center;gap:8px"><div class="section-dot" style="background:var(--purple)"></div>Activity 2</div><button type="button" class="remove-activity-btn" onclick="removeActivity(2)">✕ Remove</button></div>
+    <div class="field"><label class="fl">Activity Type <span class="req">*</span></label><select id="f_type_2" onchange="onActivityChange(2); updateProgress()"><option value="">— select activity —</option><optgroup label="🏃 Distance-Based"><option value="Running">🏃 Running</option><option value="Cycling">🚴 Cycling</option><option value="Walking">🚶 Walking</option></optgroup><optgroup label="⏱ Time-Based"><option value="Swimming">🏊 Swimming</option><option value="Hiking">🥾 Hiking</option><option value="Rowing">🚣 Rowing</option><option value="Triathlon">🏅 Triathlon</option><option value="Badminton">🏸 Badminton</option><option value="Tennis">🎾 Tennis</option><option value="Table Tennis">🏓 Table Tennis</option><option value="Squash">🎯 Squash</option><option value="Pickleball">🏸 Pickleball</option><option value="Football / Soccer">⚽ Football / Soccer</option><option value="Cricket">🏏 Cricket</option><option value="Basketball">🏀 Basketball</option><option value="Volleyball">🏐 Volleyball</option><option value="Baseball">⚾ Baseball</option><option value="Rugby">🏉 Rugby</option><option value="Hockey">🏑 Hockey</option><option value="Kabaddi">🤼 Kabaddi</option><option value="Kho Kho">🏃 Kho Kho</option><option value="Golf">⛳ Golf</option><option value="Archery">🏹 Archery</option><option value="Bowling">🎳 Bowling</option><option value="Snooker / Billiards">🎱 Snooker / Billiards</option><option value="Wrestling">🤼 Wrestling</option><option value="Boxing">🥊 Boxing</option><option value="Judo">🥋 Judo</option><option value="Karate">🥋 Karate</option><option value="Taekwondo">🥋 Taekwondo</option><option value="MMA">🥊 MMA</option><option value="Weightlifting">🏋️ Weightlifting</option><option value="Powerlifting">🏋️ Powerlifting</option><option value="CrossFit">💪 CrossFit</option><option value="Gym Workout">💪 Gym Workout</option><option value="Yoga">🧘 Yoga</option><option value="Pilates">🧘 Pilates</option><option value="Meditation">🧘 Meditation</option><option value="Skating">⛸ Skating</option><option value="Skiing">⛷ Skiing</option><option value="Snowboarding">🏂 Snowboarding</option><option value="Surfing">🏄 Surfing</option><option value="Diving">🤿 Diving</option><option value="Canoeing">🛶 Canoeing</option><option value="Kayaking">🛶 Kayaking</option><option value="Rock Climbing">🧗 Rock Climbing</option><option value="Mountaineering">🏔️ Mountaineering</option><option value="Horse Riding">🐎 Horse Riding</option><option value="Chess">♟️ Chess</option></optgroup></select><div class="field-err" id="err_type_2">Please select an activity</div></div>
+    <div class="field distance-wrap hidden" id="distanceWrap_2"><label class="fl">Distance (km) <span class="req">*</span></label><input type="number" id="f_distance_2" placeholder="0.0" step="0.01" min="0" oninput="updatePoints(); updateProgress()"><div class="field-hint">Enter distance in kilometres</div><div class="field-err" id="err_distance_2">Please enter the distance</div></div>
+    <div class="field"><label class="fl">Duration <span class="req">*</span></label><div class="dur-row"><div class="dur-group"><select id="f_hr_2" class="dur-select" onchange="updatePoints(); updateProgress()"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select><span class="dur-label">Hr</span></div><div class="dur-group"><select id="f_min_2" class="dur-select" onchange="updatePoints(); updateProgress()"><option value="0">00</option><option value="5">05</option><option value="10">10</option><option value="15">15</option><option value="20">20</option><option value="25">25</option><option value="30">30</option><option value="35">35</option><option value="40">40</option><option value="45">45</option><option value="50">50</option><option value="55">55</option></select><span class="dur-label">Min</span></div></div><div class="field-err" id="err_duration_2">Please select a duration (at least 5 minutes)</div></div>
+    <div class="field"><label class="fl">Notes (optional)</label><input type="text" id="f_notes_2" placeholder="e.g. Evening gym session"></div>
+  </div>
+
+  <!-- Activity 3 -->
+  <div class="form-card activity-card" id="activity-3" style="display:none">
+    <div class="section-label" style="justify-content:space-between"><div style="display:flex;align-items:center;gap:8px"><div class="section-dot" style="background:var(--red)"></div>Activity 3</div><button type="button" class="remove-activity-btn" onclick="removeActivity(3)">✕ Remove</button></div>
+    <div class="field"><label class="fl">Activity Type <span class="req">*</span></label><select id="f_type_3" onchange="onActivityChange(3); updateProgress()"><option value="">— select activity —</option><optgroup label="🏃 Distance-Based"><option value="Running">🏃 Running</option><option value="Cycling">🚴 Cycling</option><option value="Walking">🚶 Walking</option></optgroup><optgroup label="⏱ Time-Based"><option value="Swimming">🏊 Swimming</option><option value="Hiking">🥾 Hiking</option><option value="Rowing">🚣 Rowing</option><option value="Triathlon">🏅 Triathlon</option><option value="Badminton">🏸 Badminton</option><option value="Tennis">🎾 Tennis</option><option value="Table Tennis">🏓 Table Tennis</option><option value="Squash">🎯 Squash</option><option value="Pickleball">🏸 Pickleball</option><option value="Football / Soccer">⚽ Football / Soccer</option><option value="Cricket">🏏 Cricket</option><option value="Basketball">🏀 Basketball</option><option value="Volleyball">🏐 Volleyball</option><option value="Baseball">⚾ Baseball</option><option value="Rugby">🏉 Rugby</option><option value="Hockey">🏑 Hockey</option><option value="Kabaddi">🤼 Kabaddi</option><option value="Kho Kho">🏃 Kho Kho</option><option value="Golf">⛳ Golf</option><option value="Archery">🏹 Archery</option><option value="Bowling">🎳 Bowling</option><option value="Snooker / Billiards">🎱 Snooker / Billiards</option><option value="Wrestling">🤼 Wrestling</option><option value="Boxing">🥊 Boxing</option><option value="Judo">🥋 Judo</option><option value="Karate">🥋 Karate</option><option value="Taekwondo">🥋 Taekwondo</option><option value="MMA">🥊 MMA</option><option value="Weightlifting">🏋️ Weightlifting</option><option value="Powerlifting">🏋️ Powerlifting</option><option value="CrossFit">💪 CrossFit</option><option value="Gym Workout">💪 Gym Workout</option><option value="Yoga">🧘 Yoga</option><option value="Pilates">🧘 Pilates</option><option value="Meditation">🧘 Meditation</option><option value="Skating">⛸ Skating</option><option value="Skiing">⛷ Skiing</option><option value="Snowboarding">🏂 Snowboarding</option><option value="Surfing">🏄 Surfing</option><option value="Diving">🤿 Diving</option><option value="Canoeing">🛶 Canoeing</option><option value="Kayaking">🛶 Kayaking</option><option value="Rock Climbing">🧗 Rock Climbing</option><option value="Mountaineering">🏔️ Mountaineering</option><option value="Horse Riding">🐎 Horse Riding</option><option value="Chess">♟️ Chess</option></optgroup></select><div class="field-err" id="err_type_3">Please select an activity</div></div>
+    <div class="field distance-wrap hidden" id="distanceWrap_3"><label class="fl">Distance (km) <span class="req">*</span></label><input type="number" id="f_distance_3" placeholder="0.0" step="0.01" min="0" oninput="updatePoints(); updateProgress()"><div class="field-hint">Enter distance in kilometres</div><div class="field-err" id="err_distance_3">Please enter the distance</div></div>
+    <div class="field"><label class="fl">Duration <span class="req">*</span></label><div class="dur-row"><div class="dur-group"><select id="f_hr_3" class="dur-select" onchange="updatePoints(); updateProgress()"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select><span class="dur-label">Hr</span></div><div class="dur-group"><select id="f_min_3" class="dur-select" onchange="updatePoints(); updateProgress()"><option value="0">00</option><option value="5">05</option><option value="10">10</option><option value="15">15</option><option value="20">20</option><option value="25">25</option><option value="30">30</option><option value="35">35</option><option value="40">40</option><option value="45">45</option><option value="50">50</option><option value="55">55</option></select><span class="dur-label">Min</span></div></div><div class="field-err" id="err_duration_3">Please select a duration (at least 5 minutes)</div></div>
+    <div class="field"><label class="fl">Notes (optional)</label><input type="text" id="f_notes_3" placeholder="e.g. Late night yoga"></div>
+  </div>
+
+  <div id="addActivityWrap" style="text-align:center;margin-bottom:16px"><button type="button" class="add-activity-btn" id="addActivityBtn" onclick="addActivity()">+ Add Another Activity</button></div>
+
+  <div class="points-preview" id="pointsPreview"><div id="pts-breakdown"></div><div class="pts-total-row"><span>Total You'll Earn</span><span class="pts-total-val" id="pts-total">0 pts</span></div></div>
+
+  <div id="server-error"></div>
+  <button class="submit-btn" id="submitBtn" onclick="handleSubmitClick()">Log Activity & Earn Points →</button>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-wrap" id="successWrap">
+  <div class="success-icon">🏅</div>
+  <div class="success-title">Activities Logged!</div>
+  <div class="success-pts" id="s_pts">0</div>
+  <div class="success-pts-label">total points earned</div>
+  <div id="s_cards"></div>
+  <button class="log-another-btn" onclick="resetForm()">Log More Activities</button>
+</div>
+
+<!-- CONFIRMATION MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <div class="modal-icon" id="modal-icon">📋</div>
+    <div class="modal-title" id="modal-title">Confirm</div>
+    <div class="modal-sub" id="modal-sub"></div>
+    <div class="modal-entries" id="modal-entries"></div>
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn-confirm" onclick="confirmSubmit()">Yes, Log It →</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div>SRC · Sunday Run Club · 100 Day Challenge</div>
+  <div>Every rep counts. Keep moving. 💪</div>
+</footer>
+
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7-lnCoBsWf9Yp_4xk-nFRoi1t28KFitO2c4tTlZ4BpMc-eSN4LKqu0t03Vn5iRkxk/exec";
+const DISTANCE_BASED = ["Running","Cycling","Walking"];
+const POINTS_PER_KM  = { "Running":11, "Cycling":5, "Walking":5 };
+const POINTS_PER_HOUR = {"Swimming":90,"Hiking":60,"Rowing":81,"Triathlon":99,"Badminton":69,"Tennis":81,"Table Tennis":51,"Squash":90,"Pickleball":60,"Football / Soccer":81,"Cricket":60,"Basketball":81,"Volleyball":69,"Baseball":51,"Rugby":90,"Hockey":81,"Kabaddi":90,"Kho Kho":81,"Golf":39,"Archery":30,"Bowling":30,"Snooker / Billiards":21,"Meditation":21,"Chess":21,"Wrestling":90,"Boxing":90,"Judo":81,"Karate":81,"Taekwondo":81,"MMA":99,"Weightlifting":81,"Powerlifting":81,"CrossFit":99,"Gym Workout":60,"Yoga":39,"Pilates":39,"Skating":69,"Skiing":81,"Snowboarding":81,"Surfing":81,"Diving":69,"Canoeing":60,"Kayaking":60,"Rock Climbing":90,"Mountaineering":99,"Horse Riding":51};
+
+let todaysEntries = [], pendingPayloads = [], participantData = [], activeSlots = 1;
+
+function getLocalLogKey(name, date) { return `src_log_${name}_${date}`; }
+function getLocalLogCount(name, date) { return parseInt(localStorage.getItem(getLocalLogKey(name, date)) || "0", 10); }
+function addLocalLogCount(name, date, count) { localStorage.setItem(getLocalLogKey(name, date), String(getLocalLogCount(name, date) + count)); }
+
+window.addEventListener("load", loadNames);
+async function loadNames() {
+  try {
+    const res = await fetch(`${APPS_SCRIPT_URL}?action=getNames`);
+    const data = await res.json();
+    const select = document.getElementById("f_name");
+    participantData = data.names || [];
+    participantData.forEach(p => { const opt = document.createElement("option"); opt.value = p.name; opt.textContent = p.name + (p.team ? ` (${p.team})` : ""); opt.dataset.team = p.team || ""; select.appendChild(opt); });
+    document.getElementById("f_date").value = new Date().toISOString().split("T")[0];
+    document.getElementById("loadingNames").classList.remove("show");
+    document.getElementById("formWrap").classList.remove("hidden");
+  } catch(err) {
+    document.getElementById("loadingNames").innerHTML = `<div style="color:var(--red);padding:32px;text-align:center">⚠ Could not load participant list.<br><small style="color:var(--muted)">Check your Web App URL is correct and deployed.</small></div>`;
+  }
+}
+</script>
+
+<script>
+function onNameChange() { const s=document.getElementById("f_name"),o=s.options[s.selectedIndex],t=o?.dataset?.team||"",td=document.getElementById("team-display"); if(t){document.getElementById("f_team").value=t;td.style.display="block";}else td.style.display="none"; }
+function addActivity() { if(activeSlots>=3)return; activeSlots++; document.getElementById(`activity-${activeSlots}`).style.display="block"; if(activeSlots>=3)document.getElementById("addActivityBtn").style.display="none"; }
+function removeActivity(n) { document.getElementById(`f_type_${n}`).value=""; document.getElementById(`f_distance_${n}`).value=""; document.getElementById(`f_hr_${n}`).value="0"; document.getElementById(`f_min_${n}`).value="0"; document.getElementById(`f_notes_${n}`).value=""; document.getElementById(`distanceWrap_${n}`).classList.add("hidden"); document.getElementById(`activity-${n}`).style.display="none"; document.getElementById(`f_type_${n}`).classList.remove("err"); document.getElementById(`activity-${n}`).querySelectorAll(".field-err").forEach(el=>el.classList.remove("show")); if(n===2&&activeSlots===3){copySlot(3,2);clearSlot(3);document.getElementById("activity-3").style.display="none";document.getElementById("activity-2").style.display="block";activeSlots=2;}else{activeSlots=Math.max(1,activeSlots-1);} document.getElementById("addActivityBtn").style.display="inline-block"; updatePoints();updateProgress(); }
+function copySlot(f,t) { document.getElementById(`f_type_${t}`).value=document.getElementById(`f_type_${f}`).value; document.getElementById(`f_distance_${t}`).value=document.getElementById(`f_distance_${f}`).value; document.getElementById(`f_hr_${t}`).value=document.getElementById(`f_hr_${f}`).value; document.getElementById(`f_min_${t}`).value=document.getElementById(`f_min_${f}`).value; document.getElementById(`f_notes_${t}`).value=document.getElementById(`f_notes_${f}`).value; onActivityChange(t); }
+function clearSlot(n) { document.getElementById(`f_type_${n}`).value=""; document.getElementById(`f_distance_${n}`).value=""; document.getElementById(`f_hr_${n}`).value="0"; document.getElementById(`f_min_${n}`).value="0"; document.getElementById(`f_notes_${n}`).value=""; document.getElementById(`distanceWrap_${n}`).classList.add("hidden"); }
+function onActivityChange(n) { const type=document.getElementById(`f_type_${n}`).value; document.getElementById(`distanceWrap_${n}`).classList.toggle("hidden",!DISTANCE_BASED.includes(type)); if(!DISTANCE_BASED.includes(type))document.getElementById(`f_distance_${n}`).value=""; updatePoints(); }
+function calcPoints(n) { const type=document.getElementById(`f_type_${n}`).value; if(!type)return 0; const hr=parseInt(document.getElementById(`f_hr_${n}`).value)||0,min=parseInt(document.getElementById(`f_min_${n}`).value)||0; if(DISTANCE_BASED.includes(type)){return Math.round((parseFloat(document.getElementById(`f_distance_${n}`).value)||0)*(POINTS_PER_KM[type]||0));} return Math.round(((hr*60+min)/60)*(POINTS_PER_HOUR[type]||0)); }
+function updatePoints() { let tot=0,html="",any=false; for(let i=1;i<=activeSlots;i++){const t=document.getElementById(`f_type_${i}`).value;if(!t)continue;any=true;const p=calcPoints(i);tot+=p;html+=`<div class="pts-row"><span>Activity ${i}: ${t}</span><span class="pts-val">+${p}</span></div>`;} const pv=document.getElementById("pointsPreview");if(!any){pv.classList.remove("show");return;} document.getElementById("pts-breakdown").innerHTML=html; document.getElementById("pts-total").textContent=tot+" pts"; pv.classList.add("show"); }
+function updateProgress() { let tf=2,ff=0; if(document.getElementById("f_name").value)ff++; if(document.getElementById("f_date").value)ff++; for(let i=1;i<=activeSlots;i++){const t=document.getElementById(`f_type_${i}`).value,d=DISTANCE_BASED.includes(t);tf+=d?3:2;if(t)ff++;if(d&&parseFloat(document.getElementById(`f_distance_${i}`).value)>0)ff++;const hr=parseInt(document.getElementById(`f_hr_${i}`).value)||0,min=parseInt(document.getElementById(`f_min_${i}`).value)||0;if(hr*60+min>=5)ff++;} document.getElementById("progressFill").style.width=(tf>0?Math.round(ff/tf*100):0)+"%"; }
+</script>
+
+<script>
+function validate() { let ok=true; function chk(id,eid,test){const v=document.getElementById(id).value.trim(),p=test(v);document.getElementById(id).classList.toggle("err",!p);const e=document.getElementById(eid);if(e)e.classList.toggle("show",!p);if(!p)ok=false;} chk("f_name","err_name",v=>v!==""); chk("f_date","err_date",v=>v!==""); for(let i=1;i<=activeSlots;i++){chk(`f_type_${i}`,`err_type_${i}`,v=>v!=="");const hr=parseInt(document.getElementById(`f_hr_${i}`).value)||0,min=parseInt(document.getElementById(`f_min_${i}`).value)||0,de=document.getElementById(`err_duration_${i}`);if(hr*60+min<5){de.classList.add("show");ok=false;}else de.classList.remove("show");const t=document.getElementById(`f_type_${i}`).value;if(DISTANCE_BASED.includes(t))chk(`f_distance_${i}`,`err_distance_${i}`,v=>v!==""&&parseFloat(v)>0);} return ok; }
+
+function buildPayloads() { const s=document.getElementById("f_name"),o=s.options[s.selectedIndex],fn=s.value,tm=o?.dataset?.team||"",dt=document.getElementById("f_date").value,pl=[]; for(let i=1;i<=activeSlots;i++){const t=document.getElementById(`f_type_${i}`).value;if(!t)continue;const km=parseFloat(document.getElementById(`f_distance_${i}`).value)||0,hr=parseInt(document.getElementById(`f_hr_${i}`).value)||0,min=parseInt(document.getElementById(`f_min_${i}`).value)||0;pl.push({full_name:fn,team:tm,activity_date:dt,activity_type:t,distance_km:km,duration:hr>0?`${hr}h ${min}m`:`${min}m`,duration_minutes:hr*60+min,notes:document.getElementById(`f_notes_${i}`).value.trim(),points:calcPoints(i)});} return pl; }
+
+async function handleSubmitClick() {
+  if(!validate())return;
+  const btn=document.getElementById("submitBtn");
+  btn.disabled=true; btn.textContent="Checking records...";
+  const name=document.getElementById("f_name").value, date=document.getElementById("f_date").value;
+  try {
+    const res=await fetch(`${APPS_SCRIPT_URL}?action=getEntries&name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}`);
+    const data=await res.json();
+    todaysEntries=data.entries||[];
+  } catch(e){ todaysEntries=[]; }
+  btn.disabled=false; btn.textContent="Log Activity & Earn Points →";
+  pendingPayloads=buildPayloads();
+  showConfirmModal(todaysEntries,date);
+}
+
+function getOrdinal(n){const s=["th","st","nd","rd"],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
+
+// ═══ FUNNY RANDOM LINES ═══
+const FUNNY_LINES = [
+  "🎬 Soch lo... jo entry karoge, woh history ban jayegi! 😄 Kya yeh final hai?",
+  "🎬 Arre devi prasad... entry toh sahi daali na? 😂",
+  "🎬 abhi baaki hai mere dost... Lekin yeh entry submit ho gayi toh edit mushkil ho sakta hai. Pakka?",
+  "🎬 Beta... entry galat hui na... toh leaderboard maaf nahi karega! 😅 Ek baar check kar lo?",
+  "🎬 70 minutes nahi... sirf 7 seconds aur dekh lo! 😄 Activity details sahi hain?",
+  "🎬 Mogambo tabhi khush hoga jab entry 100% sahi hogi! Distance ✔️ Time ✔️ Activity ✔️ Pakka submit karna hai?",
+  "🎬 <b>Baburao ka style alag hai...</b> Hamari validation aur bhi alag hai. 😎",
+  "🎬 Arre O Sambha... ek baar entry review kar le! 😄",
+  "💪 Aapki activity fit hai... entry bhi fit honi chahiye!",
+  "🕵️ Review kar lo... warna group ke Sherlock Holmes active ho jayenge! 😄",
+  "😆 Typos bhi cardio karte hain... seedha leaderboard tak pahunch jaate hain!",
+  "😎 Running fast is impressive. Submitting accurately is legendary.",
+  "🎬 <b>Circuit bolta hai...</b> pehle verify karo, phir submit karo!",
+  "😅 Galti se mistake ho gayi toh leaderboard seedha notice le lega!",
+  "😎 Aaj review karoge... kal memes se bachoge!",
+];
+function getRandomFunnyLine() { return FUNNY_LINES[Math.floor(Math.random() * FUNNY_LINES.length)]; }
+
+function showConfirmModal(existingEntries,date) {
+  const modal=document.getElementById("confirmModal"),iconEl=document.getElementById("modal-icon"),titleEl=document.getElementById("modal-title"),subEl=document.getElementById("modal-sub"),entriesEl=document.getElementById("modal-entries");
+  const fromSheet=existingEntries.length, name=document.getElementById("f_name").value, lc=getLocalLogCount(name,date), total=Math.max(fromSheet,lc), nc=pendingPayloads.length;
+  const funnyLine = `<div style="margin-bottom:14px;padding:12px 16px;background:rgba(249,115,22,0.08);border:1.5px solid rgba(249,115,22,0.25);border-radius:10px;font-size:14px;line-height:1.6;color:var(--text);animation:funnySlideIn .4s ease-out,funnyGlow 2s ease-in-out infinite .4s">${getRandomFunnyLine()}</div>`;
+  if(total===0){iconEl.textContent="🌟";titleEl.textContent="This is your 1st Entry for the day!";subEl.innerHTML="Well Done! Keep the momentum going 💪"+funnyLine;entriesEl.innerHTML=`<div class="modal-first-entry"><span>🔥</span>Logging ${nc} activit${nc>1?"ies":"y"} for ${date}</div>`;}
+  else{const nx=total+1;iconEl.textContent="📋";titleEl.textContent=`This is your ${getOrdinal(nx)} Activity Update`;subEl.innerHTML=`You already have ${total} activit${total>1?"ies":"y"} logged for ${date}. You're about to add ${nc} more.`+funnyLine;if(fromSheet>0){entriesEl.innerHTML=`<div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">Already logged today:</div>`+existingEntries.map(e=>`<div class="modal-entry"><span class="modal-entry-name">${e.activity_type}${e.distance_km>0?" · "+e.distance_km+" km":""} · ${e.duration}</span><span class="modal-entry-pts">+${e.points} pts</span></div>`).join("");}else{entriesEl.innerHTML=`<div class="modal-first-entry"><span>📋</span>You've already logged ${total} activit${total>1?"ies":"y"} today</div>`;}}
+  modal.classList.add("show");
+}
+function closeModal(){document.getElementById("confirmModal").classList.remove("show");const b=document.getElementById("submitBtn");b.disabled=false;b.textContent="Log Activity & Earn Points →";}
+async function confirmSubmit(){document.getElementById("confirmModal").classList.remove("show");await doSubmit(pendingPayloads);}
+</script>
+
+<script>
+async function doSubmit(payloads) {
+  const btn=document.getElementById("submitBtn"); btn.disabled=true; btn.textContent="Logging activities...";
+  try {
+    for(const p of payloads){await fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(p)});}
+    addLocalLogCount(payloads[0].full_name,payloads[0].activity_date,payloads.length);
+    showSuccess(payloads);
+  } catch(err){const e=document.getElementById("server-error");e.textContent="Could not submit. Please try again.";e.style.display="block";btn.disabled=false;btn.textContent="Log Activity & Earn Points →";}
+}
+function showSuccess(payloads) {
+  document.getElementById("formWrap").classList.add("hidden");
+  document.getElementById("successWrap").classList.add("show");
+  document.getElementById("s_pts").textContent=payloads.reduce((s,p)=>s+p.points,0);
+  document.getElementById("s_cards").innerHTML=payloads.map((d,i)=>`<div class="success-card"><div class="sc-row"><span class="sc-label">Activity ${i+1}</span><span class="sc-val">${d.activity_type}</span></div><div class="sc-row"><span class="sc-label">Date</span><span class="sc-val">${d.activity_date}</span></div><div class="sc-row"><span class="sc-label">Distance</span><span class="sc-val">${d.distance_km>0?d.distance_km+" km":"—"}</span></div><div class="sc-row"><span class="sc-label">Duration</span><span class="sc-val">${d.duration}</span></div><div class="sc-row"><span class="sc-label">Points</span><span class="sc-val" style="color:var(--green)">+${d.points}</span></div></div>`).join("");
+  window.scrollTo({top:0,behavior:"smooth"});
+  // 🎊 Confetti burst
+  const colors=["#e8350d","#f97316","#fbbf24","#16a34a","#2563eb","#7c3aed"];
+  for(let i=0;i<50;i++){const c=document.createElement("div");c.className="confetti-piece";c.style.left=Math.random()*100+"%";c.style.background=colors[Math.floor(Math.random()*colors.length)];c.style.width=(6+Math.random()*7)+"px";c.style.height=(6+Math.random()*7)+"px";c.style.borderRadius=Math.random()>.5?"50%":"2px";c.style.animationDuration=(1.5+Math.random()*2)+"s";c.style.animationDelay=(Math.random()*.5)+"s";document.body.appendChild(c);setTimeout(()=>c.remove(),4500);}
+}
+function resetForm() {
+  document.getElementById("successWrap").classList.remove("show");
+  document.getElementById("formWrap").classList.remove("hidden");
+  document.getElementById("f_name").value="";
+  document.getElementById("f_date").value=new Date().toISOString().split("T")[0];
+  document.getElementById("team-display").style.display="none";
+  for(let i=1;i<=3;i++){clearSlot(i);document.getElementById(`activity-${i}`).style.display=i===1?"block":"none";document.getElementById(`f_type_${i}`).classList.remove("err");document.getElementById(`activity-${i}`).querySelectorAll(".field-err").forEach(el=>el.classList.remove("show"));}
+  activeSlots=1; document.getElementById("addActivityBtn").style.display="inline-block";
+  document.getElementById("pointsPreview").classList.remove("show");
+  document.getElementById("progressFill").style.width="0%";
+  const e=document.getElementById("server-error");e.style.display="none";e.textContent="";
+  const btn=document.getElementById("submitBtn");btn.disabled=false;btn.textContent="Log Activity & Earn Points →";
+  todaysEntries=[];pendingPayloads=[];
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+</script>
+
+<script>
+// ═══ FLOATING PARTICLES in hero ═══
+(function() {
+  const hero = document.querySelector(".hero");
+  if (!hero) return;
+  for (let i = 0; i < 12; i++) {
+    const p = document.createElement("div");
+    p.className = "hero-particle";
+    p.style.left = Math.random() * 100 + "%";
+    p.style.bottom = "0";
+    p.style.width = p.style.height = (2 + Math.random() * 3) + "px";
+    p.style.animationDuration = (3 + Math.random() * 4) + "s";
+    p.style.animationDelay = (Math.random() * 4) + "s";
+    hero.appendChild(p);
+  }
+})();
+</script>
+
+</body>
+</html>
