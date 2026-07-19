@@ -403,7 +403,7 @@ async function loadNames() {
     const res = await fetch(`${APPS_SCRIPT_URL}?action=getNames`);
     const data = await res.json();
     const select = document.getElementById("f_name");
-    participantData = data.names || [];
+    participantData = (data.names || []).sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
     participantData.forEach(p => { const opt = document.createElement("option"); opt.value = p.name; opt.textContent = p.name + (p.team ? ` (${p.team})` : ""); opt.dataset.team = p.team || ""; select.appendChild(opt); });
     document.getElementById("f_date").value = new Date().toISOString().split("T")[0];
     document.getElementById("loadingNames").classList.remove("show");
