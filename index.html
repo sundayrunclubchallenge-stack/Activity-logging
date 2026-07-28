@@ -411,7 +411,8 @@ async function loadNames() {
     const teamSelect = document.getElementById("f_teamFilter");
     teams.forEach(t => { const opt = document.createElement("option"); opt.value = t; opt.textContent = t; teamSelect.appendChild(opt); });
     renderNameOptions("");
-    document.getElementById("f_date").value = new Date().toISOString().split("T")[0];
+    const now = new Date();
+    document.getElementById("f_date").value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     document.getElementById("loadingNames").classList.remove("show");
     document.getElementById("formWrap").classList.remove("hidden");
   } catch(err) {
@@ -522,7 +523,7 @@ function resetForm() {
   document.getElementById("f_teamFilter").value="";
   renderNameOptions("");
   document.getElementById("f_name").value="";
-  document.getElementById("f_date").value=new Date().toISOString().split("T")[0];
+  const now2=new Date(); document.getElementById("f_date").value=`${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}-${String(now2.getDate()).padStart(2,'0')}`;
   document.getElementById("team-display").style.display="none";
   for(let i=1;i<=3;i++){clearSlot(i);document.getElementById(`activity-${i}`).style.display=i===1?"block":"none";document.getElementById(`f_type_${i}`).classList.remove("err");document.getElementById(`activity-${i}`).querySelectorAll(".field-err").forEach(el=>el.classList.remove("show"));}
   activeSlots=1; document.getElementById("addActivityBtn").style.display="inline-block";
