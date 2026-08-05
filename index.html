@@ -24,6 +24,15 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .hero-sub{color:rgba(255,255,255,0.55);font-size:14px;max-width:360px;margin:0 auto;line-height:1.6}
 .accent-bar{height:5px;background:linear-gradient(90deg,var(--red),var(--orange),var(--yellow),var(--green),var(--blue),var(--purple))}
 
+.dash-banner{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:16px 24px;background:var(--surface);border-bottom:1.5px solid var(--border)}
+.dash-banner-link{display:inline-flex;align-items:center;gap:8px;padding:9px 20px;background:linear-gradient(90deg,var(--blue),var(--purple));border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#fff;text-transform:uppercase;letter-spacing:.1em;text-decoration:none;transition:opacity .15s}
+.dash-banner-link:hover{opacity:.9}
+.dash-banner-note{font-size:12px;color:var(--muted)}
+
+.success-dash-link{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);text-decoration:none;transition:all .15s;margin-top:10px}
+.success-dash-link:hover{border-color:var(--blue);background:#eff6ff}
+.success-dash-note{font-size:12px;color:var(--muted);margin-top:14px}
+
 /* FORM */
 .form-outer{max-width:560px;margin:36px auto;padding:0 20px 80px}
 .form-outer.hidden{display:none}
@@ -281,6 +290,11 @@ label.fl{color:rgba(255,255,255,0.5)}
 </div>
 <div class="accent-bar"></div>
 
+<div class="dash-banner">
+  <a class="dash-banner-link" href="https://sundayrunclubchallenge-stack.github.io/Dashboard/">📊 View Dashboard</a>
+  <div class="dash-banner-note">Your activity will be reflected on the Dashboard within 5 minutes.</div>
+</div>
+
 <div class="spinner-wrap show" id="loadingNames">
   <div class="spinner"></div>Loading participant list...
 </div>
@@ -367,6 +381,8 @@ label.fl{color:rgba(255,255,255,0.5)}
   <div class="success-pts" id="s_pts">0</div>
   <div class="success-pts-label">total points earned</div>
   <div id="s_cards"></div>
+  <a class="success-dash-link" href="https://sundayrunclubchallenge-stack.github.io/Dashboard/">📊 View Dashboard</a>
+  <div class="success-dash-note">Your activity will be reflected on the Dashboard within 5 minutes.</div>
   <button class="log-another-btn" onclick="resetForm()">Log More Activities</button>
 </div>
 
