@@ -328,7 +328,8 @@ label.fl{color:rgba(255,255,255,0.5)}
     <div class="field">
       <label class="fl">Activity Date <span class="req">*</span></label>
       <input type="date" id="f_date" onchange="updateProgress()">
-      <div class="field-err" id="err_date">Please select the activity date</div>
+      <div class="field-hint">You can log today or backdate up to 2 days.</div>
+      <div class="field-err" id="err_date">Please select a date within the last 2 days (no future dates)</div>
     </div>
   </div>
 
@@ -419,6 +420,13 @@ const POINTS_PER_HOUR = {"Swimming":90,"Hiking":60,"Rowing":81,"Triathlon":99,"B
 
 let todaysEntries = [], pendingPayloads = [], participantData = [], activeSlots = 1;
 
+// ═══ DATE WINDOW: allow today + 2 days back (3 selectable days), no future ═══
+const MAX_BACKDATE_DAYS = 2;
+function fmtDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function getTodayStr() { return fmtDate(new Date()); }
+function getMinDateStr() { const d = new Date(); d.setDate(d.getDate() - MAX_BACKDATE_DAYS); return fmtDate(d); }
+function applyDateBounds() { const el = document.getElementById("f_date"); el.min = getMinDateStr(); el.max = getTodayStr(); }
+
 function getLocalLogKey(name, date) { return `src_log_${name}_${date}`; }
 function getLocalLogCount(name, date) { return parseInt(localStorage.getItem(getLocalLogKey(name, date)) || "0", 10); }
 function addLocalLogCount(name, date, count) { localStorage.setItem(getLocalLogKey(name, date), String(getLocalLogCount(name, date) + count)); }
@@ -433,8 +441,8 @@ async function loadNames() {
     const teamSelect = document.getElementById("f_teamFilter");
     teams.forEach(t => { const opt = document.createElement("option"); opt.value = t; opt.textContent = t; teamSelect.appendChild(opt); });
     renderNameOptions("");
-    const now = new Date();
-    document.getElementById("f_date").value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    document.getElementById("f_date").value = getTodayStr();
+    applyDateBounds();
     document.getElementById("loadingNames").classList.remove("show");
     document.getElementById("formWrap").classList.remove("hidden");
   } catch(err) {
@@ -467,7 +475,7 @@ function updateProgress() { let tf=2,ff=0; if(document.getElementById("f_name").
 </script>
 
 <script>
-function validate() { let ok=true; function chk(id,eid,test){const v=document.getElementById(id).value.trim(),p=test(v);document.getElementById(id).classList.toggle("err",!p);const e=document.getElementById(eid);if(e)e.classList.toggle("show",!p);if(!p)ok=false;} chk("f_name","err_name",v=>v!==""); chk("f_date","err_date",v=>v!==""); for(let i=1;i<=activeSlots;i++){chk(`f_type_${i}`,`err_type_${i}`,v=>v!=="");const t=document.getElementById(`f_type_${i}`).value;if(WILD_CARD_TYPES.includes(t)){chk(`f_steps_${i}`,`err_steps_${i}`,v=>v!==""&&parseInt(v)>0);continue;}const hr=parseInt(document.getElementById(`f_hr_${i}`).value)||0,min=parseInt(document.getElementById(`f_min_${i}`).value)||0,de=document.getElementById(`err_duration_${i}`);if(hr*60+min<15){de.classList.add("show");ok=false;}else de.classList.remove("show");if(DISTANCE_BASED.includes(t))chk(`f_distance_${i}`,`err_distance_${i}`,v=>v!==""&&parseFloat(v)>0);} return ok; }
+function validate() { let ok=true; function chk(id,eid,test){const v=document.getElementById(id).value.trim(),p=test(v);document.getElementById(id).classList.toggle("err",!p);const e=document.getElementById(eid);if(e)e.classList.toggle("show",!p);if(!p)ok=false;} chk("f_name","err_name",v=>v!==""); chk("f_date","err_date",v=>v!==""&&v>=getMinDateStr()&&v<=getTodayStr()); for(let i=1;i<=activeSlots;i++){chk(`f_type_${i}`,`err_type_${i}`,v=>v!=="");const t=document.getElementById(`f_type_${i}`).value;if(WILD_CARD_TYPES.includes(t)){chk(`f_steps_${i}`,`err_steps_${i}`,v=>v!==""&&parseInt(v)>0);continue;}const hr=parseInt(document.getElementById(`f_hr_${i}`).value)||0,min=parseInt(document.getElementById(`f_min_${i}`).value)||0,de=document.getElementById(`err_duration_${i}`);if(hr*60+min<15){de.classList.add("show");ok=false;}else de.classList.remove("show");if(DISTANCE_BASED.includes(t))chk(`f_distance_${i}`,`err_distance_${i}`,v=>v!==""&&parseFloat(v)>0);} return ok; }
 
 function buildPayloads() { const s=document.getElementById("f_name"),o=s.options[s.selectedIndex],fn=s.value,tm=o?.dataset?.team||"",dt=document.getElementById("f_date").value,pl=[]; for(let i=1;i<=activeSlots;i++){const t=document.getElementById(`f_type_${i}`).value;if(!t)continue;const isSteps=WILD_CARD_TYPES.includes(t);const km=isSteps?(parseInt(document.getElementById(`f_steps_${i}`).value)||0):(parseFloat(document.getElementById(`f_distance_${i}`).value)||0);const hr=isSteps?0:(parseInt(document.getElementById(`f_hr_${i}`).value)||0);const min=isSteps?0:(parseInt(document.getElementById(`f_min_${i}`).value)||0);pl.push({full_name:fn,team:tm,activity_date:dt,activity_type:t,distance_km:km,duration:isSteps?"0m":(hr>0?`${hr}h ${min}m`:`${min}m`),duration_minutes:isSteps?0:(hr*60+min),notes:document.getElementById(`f_notes_${i}`).value.trim(),points:calcPoints(i)});} return pl; }
 
@@ -545,7 +553,7 @@ function resetForm() {
   document.getElementById("f_teamFilter").value="";
   renderNameOptions("");
   document.getElementById("f_name").value="";
-  const now2=new Date(); document.getElementById("f_date").value=`${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}-${String(now2.getDate()).padStart(2,'0')}`;
+  document.getElementById("f_date").value=getTodayStr(); applyDateBounds();
   document.getElementById("team-display").style.display="none";
   for(let i=1;i<=3;i++){clearSlot(i);document.getElementById(`activity-${i}`).style.display=i===1?"block":"none";document.getElementById(`f_type_${i}`).classList.remove("err");document.getElementById(`activity-${i}`).querySelectorAll(".field-err").forEach(el=>el.classList.remove("show"));}
   activeSlots=1; document.getElementById("addActivityBtn").style.display="inline-block";
